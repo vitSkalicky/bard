@@ -1,3 +1,5 @@
+(This is a branch with a temporary and slightly hacky solution which allows me to use Tectonic before the support for it is merged into mater)
+
 # bard
 
 [![crates.io](https://img.shields.io/crates/v/bard.svg)](https://crates.io/crates/bard) [![CI](https://github.com/vojtechkral/bard/actions/workflows/CI.yaml/badge.svg)](https://github.com/vojtechkral/bard/actions/workflows/CI.yaml)
