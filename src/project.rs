@@ -44,7 +44,7 @@ fn default_chorus_label() -> String {
 
 pub type Metadata = BTreeMap<Box<str>, Value>;
 
-#[derive(Deserialize, Clone, Copy, Debug)]
+#[derive(Deserialize, Clone, Copy, Debug, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Format {
     Html,

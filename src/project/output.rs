@@ -18,6 +18,15 @@ pub struct Output {
     pub post_process: Option<CmdSpec>,
     #[serde(rename = "process_win")]
     pub post_process_win: Option<CmdSpec>,
+    /// *Instead* of executing `process` or `process_win`, use the build-in Tectonic library to create Pdf.
+    ///
+    /// If true, changes format to pdf, changes output file extension to `.pdf` and removes
+    /// `post_process` and `post_process_win`
+    ///
+    /// (This is a temporary and hacky solution to make the same configuration files also work with
+    /// bard without tectonic support - it will just use the `process` setting)
+    #[serde(rename = "process_into_pdf")]
+    pub use_tectonic: Option<bool>,
 
     #[serde(flatten)]
     pub metadata: Metadata,
@@ -48,6 +57,15 @@ impl Output {
                 self.file
             ),
         };
+
+        // Hack - if use_tectonic is enabled, change format to pdf, output extension to .pdf and
+        // disable post process to compile the file with tectonic instead of post_process
+        if self.use_tectonic == Some(true){
+            self.format = Format::Pdf;
+            self.file.set_extension("pdf");
+            self.post_process = None;
+            self.post_process_win = None;
+        }
 
         Ok(())
     }
