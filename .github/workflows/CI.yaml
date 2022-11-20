@@ -116,6 +116,9 @@ jobs:
             ~/.cargo/registry/cache
             target
           key: test-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+      - name: Install system dependencies
+        run: |
+          sudo apt install libgraphite2-dev -y
       - name: Test
         run: |
           cargo test --locked
