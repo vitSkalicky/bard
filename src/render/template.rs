@@ -451,7 +451,7 @@ impl<'a> Render<'a> for RPdf<'a> {
         //change working directory back
         env::set_current_dir(&path).expect("WTF?! this should never happen. Maybe the working directory was deleted. Please contact the authors.");
 
-        return res;
+        res
     }
 }
 
