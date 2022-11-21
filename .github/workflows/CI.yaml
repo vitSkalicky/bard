@@ -254,6 +254,9 @@ jobs:
         run: |
           cargo install cargo-deb --version ${{ env.CARGO_DEB }} --root cargo-tools --target-dir cargo-tools-build
           cargo install cargo-generate-rpm --version ${{ env.CARGO_RPM }} --root cargo-tools --target-dir cargo-tools-build
+      - name: Install system dependencies
+        run: |
+          sudo apt install libgraphite2-dev -y
       - name: Build
         run: cargo build --locked --release --target=x86_64-unknown-linux-musl
       - name: Generate packages
@@ -305,6 +308,13 @@ jobs:
             ~/.cargo/registry/cache
             target
           key: build-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+      - name: Set up vcpkg
+        run: |
+          cargo install cargo-vcpkg
+          cargo vcpkg build
+          export VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
+          export RUSTFLAGS='-Ctarget-feature=+crt-static'
+          export TECTONIC_DEP_BACKEND=vcpkg
       - name: Build
         run: |
           cargo build --locked --release

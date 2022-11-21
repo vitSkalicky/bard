@@ -2351,9 +2351,9 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.9.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da34290bd718a1a02b1c0862820f94c397363f77bfc99dd36257c634c3db0756"
+checksum = "ec7e4c19f5e618889cdedf8d30b3146210987068efd33f46bfde3d3198f895e0"
 dependencies = [
  "atty",
  "byte-unit",
@@ -2491,9 +2491,9 @@ dependencies = [
 
 [[package]]
 name = "tectonic_docmodel"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc53e7bc67fe20153b081c7c7cc146f61ae6bbc767555095516d2d69196ebbac"
+checksum = "7e9c91d2cb0935fe45dfa3c457a8ac61a4f0e7b851ae11dfeb4585000f877efc"
 dependencies = [
  "serde",
  "tectonic_errors",
@@ -2532,9 +2532,9 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_xdvipdfmx"
-version = "0.2.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89ea4120b937feae876f040931f5022bc9eb46e3a792386594c49833c63ad602"
+checksum = "214751916ddb9a00afb94b805a43be3079f75cb71a2ef29198ea16cc6e5a552a"
 dependencies = [
  "cc",
  "libc",
@@ -2545,9 +2545,9 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_xetex"
-version = "0.3.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92c8f9bf1b3a19286ee5aca75c40d8a1c687dae4e8b60ab12da96e24940bcff1"
+checksum = "4d27dc8b9b1158e0416166ea9b82264e8c574e2ff30b12ce83cf731b9e4e7db2"
 dependencies = [
  "cc",
  "libc",
@@ -2599,9 +2599,9 @@ dependencies = [
 
 [[package]]
 name = "tectonic_pdf_io"
-version = "0.2.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "142f45922dc4d664c75772947d84f23a2f56a211555e900c9f4e97480071fdcd"
+checksum = "96e1c41456dfa04e01e43950bbdc6ac272ff7dc6be7921cb4c4964936c18b366"
 dependencies = [
  "cc",
  "tectonic_bridge_core",
@@ -2630,9 +2630,9 @@ dependencies = [
 
 [[package]]
 name = "tectonic_xetex_layout"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7eaa20db9d65853f7304d8bfd0eebd8eae2d00e82f94029c483db215b61c0556"
+checksum = "9ea6f47e8d87464034ff3d2252f4000160e2856d23e5a5b158e27f05a1285f80"
 dependencies = [
  "cc",
  "tectonic_bridge_core",
