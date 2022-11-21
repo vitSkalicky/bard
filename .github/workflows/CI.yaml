@@ -169,9 +169,9 @@ jobs:
         run: |
           cargo install cargo-vcpkg
           cargo vcpkg build
-          export VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
-          export RUSTFLAGS='-Ctarget-feature=+crt-static'
-          export TECTONIC_DEP_BACKEND=vcpkg
+          $env:VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
+          $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
+          $env:TECTONIC_DEP_BACKEND=vcpkg
       - name: Test
         run: |
           cargo test --locked
@@ -312,9 +312,9 @@ jobs:
         run: |
           cargo install cargo-vcpkg
           cargo vcpkg build
-          export VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
-          export RUSTFLAGS='-Ctarget-feature=+crt-static'
-          export TECTONIC_DEP_BACKEND=vcpkg
+          $env:VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
+          $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
+          $env:TECTONIC_DEP_BACKEND=vcpkg
       - name: Build
         run: |
           cargo build --locked --release
