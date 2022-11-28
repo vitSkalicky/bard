@@ -179,6 +179,8 @@ jobs:
           if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
           $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
           $env:TECTONIC_DEP_BACKEND="vcpkg"
+          echo $env:VCPKG_ROOT
+          ls $env:VCPKG_ROOT
           cargo test --locked
 
   msrv:
