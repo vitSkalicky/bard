@@ -171,12 +171,14 @@ jobs:
           cargo vcpkg build
           $env:VCPKG_ROOT=$CARGO_TARGET_DIR
           if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
+          $env:VCPKG_ROOT="$env:VCPKG_ROOT\vcpkg"
           $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
           $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Test
         run: |
           $env:VCPKG_ROOT=$CARGO_TARGET_DIR
           if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
+          $env:VCPKG_ROOT="$env:VCPKG_ROOT\vcpkg"
           $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
           $env:TECTONIC_DEP_BACKEND="vcpkg"
           echo $env:VCPKG_ROOT
@@ -321,12 +323,14 @@ jobs:
           cargo vcpkg build
           $env:VCPKG_ROOT=$CARGO_TARGET_DIR
           if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
+          $env:VCPKG_ROOT="$env:VCPKG_ROOT\vcpkg"
           $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
           $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Build
         run: |
           $env:VCPKG_ROOT=$CARGO_TARGET_DIR
           if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
+          $env:VCPKG_ROOT="$env:VCPKG_ROOT\vcpkg"
           $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
           $env:TECTONIC_DEP_BACKEND="vcpkg"
           cargo build --locked --release
