@@ -169,9 +169,10 @@ jobs:
         run: |
           cargo install cargo-vcpkg
           cargo vcpkg build
-          $env:VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
+          $env:VCPKG_ROOT=$CARGO_TARGET_DIR
+          if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
           $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
-          $env:TECTONIC_DEP_BACKEND=vcpkg
+          $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Test
         run: |
           cargo test --locked
@@ -312,9 +313,10 @@ jobs:
         run: |
           cargo install cargo-vcpkg
           cargo vcpkg build
-          $env:VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
+          $env:VCPKG_ROOT=$CARGO_TARGET_DIR
+          if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
           $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
-          $env:TECTONIC_DEP_BACKEND=vcpkg
+          $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Build
         run: |
           cargo build --locked --release
