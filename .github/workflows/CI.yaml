@@ -175,6 +175,10 @@ jobs:
           $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Test
         run: |
+          $env:VCPKG_ROOT=$CARGO_TARGET_DIR
+          if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
+          $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
+          $env:TECTONIC_DEP_BACKEND="vcpkg"
           cargo test --locked
 
   msrv:
@@ -319,6 +323,10 @@ jobs:
           $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Build
         run: |
+          $env:VCPKG_ROOT=$CARGO_TARGET_DIR
+          if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
+          $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
+          $env:TECTONIC_DEP_BACKEND="vcpkg"
           cargo build --locked --release
       - name: Upload Windows exe
         uses: actions/upload-artifact@v3
