@@ -25,6 +25,8 @@ lazy_static! {
     static ref REGEX_CACHE: Mutex<RegexCache> = Mutex::new(RegexCache::new());
 }
 
+// Default templates
+
 pub struct DefaultTemaplate {
     pub filename: &'static str,
     pub content: &'static str,
@@ -50,6 +52,38 @@ declare_default_templates!(
         (DEFAULT_TEMPLATE_HOVORKA, "hovorka.hbs"),
     ]
 );
+
+// HB helpers
+
+macro_rules! hb_err {
+    ($msg:literal) => {
+        RenderError::new($msg)
+    };
+
+    ($fmt:literal, $($field:expr),+) => {
+        RenderError::new(format!($fmt, $($field),+))
+    };
+
+    ($e:ident, $fmt:literal, $($field:expr),+) => {
+        RenderError::from_error(&format!($fmt, $($field),+), $e)
+    };
+}
+
+trait HandlebarsExt {
+    fn with_helper<T>(self, name: &str, helper: T) -> Self
+    where
+        T: HelperDef + Send + Sync + 'static;
+}
+
+impl HandlebarsExt for Handlebars<'static> {
+    fn with_helper<T>(mut self, name: &str, helper: T) -> Self
+    where
+        T: HelperDef + Send + Sync + 'static,
+    {
+        self.register_helper(name, Box::new(helper));
+        self
+    }
+}
 
 fn latex_escape(input: &str, pre_spaces: bool) -> String {
     let mut res = String::with_capacity(input.len());
@@ -141,21 +175,21 @@ struct ImgHelper {
 }
 
 impl ImgHelper {
-    fn width(project: &Project) -> Box<Self> {
+    fn width(project: &Project) -> Self {
         let out_dir = project.settings.dir_output().to_owned();
-        Box::new(Self {
+        Self {
             out_dir,
             result_i: 0,
             name: "img_w",
-        })
+        }
     }
-    fn height(project: &Project) -> Box<Self> {
+    fn height(project: &Project) -> Self {
         let out_dir = project.settings.dir_output().to_owned();
-        Box::new(Self {
+        Self {
             out_dir,
             result_i: 1,
             name: "img_h",
-        })
+        }
     }
 }
 
@@ -170,24 +204,20 @@ impl HelperDef for ImgHelper {
         let path: &str = h
             .param(0)
             .map(|x| x.value())
-            .ok_or_else(|| RenderError::new(format!("{}: Image path not supplied", self.name)))
+            .ok_or_else(|| hb_err!("{}: Image path not supplied", self.name))
             .and_then(|x| {
                 x.as_str().ok_or_else(|| {
-                    RenderError::new(&format!(
+                    hb_err!(
                         "{}: Image path not a string, it's {:?} as JSON.",
-                        self.name, x,
-                    ))
+                        self.name,
+                        x
+                    )
                 })
             })?;
 
         let pathbuf = Path::new(&path).to_owned().resolved(&self.out_dir);
-        let (w, h) = image_dimensions(&pathbuf).map_err(|e| {
-            RenderError::new(&format!(
-                "{}: Couldn't read image at `{}`: {}",
-                self.name, pathbuf, e
-            ))
-        })?;
-
+        let (w, h) = image_dimensions(&pathbuf)
+            .map_err(|e| hb_err!(e, "{}: Couldn't read image at `{}`", self.name, pathbuf))?;
         let res = [w, h][self.result_i];
         Ok(hb::ScopedJson::Derived(JsonValue::from(res)))
     }
@@ -200,8 +230,8 @@ struct DpiHelper {
 impl DpiHelper {
     const INCH_MM: f64 = 25.4;
 
-    fn new(output: &Output) -> Box<Self> {
-        Box::new(Self { dpi: output.dpi() })
+    fn new(output: &Output) -> Self {
+        Self { dpi: output.dpi() }
     }
 }
 
@@ -216,13 +246,10 @@ impl HelperDef for DpiHelper {
         let value: f64 = h
             .param(0)
             .map(|x| x.value())
-            .ok_or_else(|| RenderError::new("px2mm: Input value not supplied"))
+            .ok_or_else(|| hb_err!("px2mm: Input value not supplied"))
             .and_then(|x| {
                 x.as_f64().ok_or_else(|| {
-                    RenderError::new(&format!(
-                        "px2mm: Input value not a number, it's {:?} as JSON.",
-                        x,
-                    ))
+                    hb_err!("px2mm: Input value not a number, it's {:?} as JSON.", x)
                 })
             })?;
 
@@ -236,13 +263,11 @@ struct VersionCheckHelper {
 }
 
 impl VersionCheckHelper {
-    const FN_NAME: &'static str = "version_check";
-
-    fn new() -> (Box<Self>, Arc<Mutex<Option<Version>>>) {
+    fn new() -> (Self, Arc<Mutex<Option<Version>>>) {
         let version = Arc::new(Mutex::new(None));
-        let this = Box::new(Self {
+        let this = Self {
             version: version.clone(),
-        });
+        };
         (this, version)
     }
 }
@@ -258,27 +283,17 @@ impl HelperDef for VersionCheckHelper {
         let version = h
             .param(0)
             .map(|x| x.value())
-            .ok_or_else(|| {
-                RenderError::new(format!("{}: No version number supplied", Self::FN_NAME))
-            })
+            .ok_or_else(|| hb_err!("version_check: No version number supplied"))
             .and_then(|x| match x {
                 JsonValue::String(s) => Ok(s.as_str()),
-                _ => Err(RenderError::new(format!(
-                    "{}: Input value not a string",
-                    Self::FN_NAME
-                ))),
+                _ => Err(hb_err!("version_check: Input value not a string")),
             })
             .and_then(|s| {
-                Version::parse(s).map_err(|e| {
-                    RenderError::from_error(
-                        &format!("{}: Could not parse version `{}`", Self::FN_NAME, s),
-                        e,
-                    )
-                })
+                Version::parse(s)
+                    .map_err(|e| hb_err!(e, "version_check: Could not parse version `{}`", s))
             })?;
 
         *self.version.lock().unwrap() = Some(version);
-
         Ok(hb::ScopedJson::Derived(JsonValue::String(String::new())))
     }
 }
@@ -302,35 +317,31 @@ impl HelperDef for VersionCheckHelper {
 struct MathHelper;
 
 impl MathHelper {
-    fn hb_math_int(a: i64, operation: &str, b: i64) -> Option<i64> {
-        match operation {
-            "+" => Some(a + b),
-            "-" => Some(a - b),
-            "*" => Some(a * b),
-            "//" => Some(a / b), // normal division is done using floats to make it simples for inexperienced users. For integer division, use //.
-            "%" => Some(a % b),
-            "&" => Some(a & b),
-            "|" => Some(a | b),
-            "^" => Some(a ^ b),
-            "<<" => Some(a << b),
-            ">>" => Some(a >> b),
-            _ => None,
-        }
+    fn hb_math_int(a: i64, operation: &str, b: i64) -> Result<i64, RenderError> {
+        Ok(match operation {
+            "+" => a + b,
+            "-" => a - b,
+            "*" => a * b,
+            "//" => a / b, // normal division is done using floats to make it simples for inexperienced users. For integer division, use //.
+            "%" => a % b,
+            "&" => a & b,
+            "|" => a | b,
+            "^" => a ^ b,
+            "<<" => a << b,
+            ">>" => a >> b,
+            _ => return Err(hb_err!("math: Operation \"{}\" is not possible with integers. Available operations on integers: +, -, *, /, //, %, &, |, ^, <<, >>", operation)),
+        })
     }
 
-    fn hb_math_float(a: f64, operation: &str, b: f64) -> Option<f64> {
-        match operation {
-            "+" => Some(a + b),
-            "-" => Some(a - b),
-            "*" => Some(a * b),
-            "/" => Some(a / b),
-            "%" => Some(a % b),
-            _ => None,
-        }
-    }
-
-    fn new() -> Box<MathHelper> {
-        Box::new(MathHelper {})
+    fn hb_math_float(a: f64, operation: &str, b: f64) -> Result<f64, RenderError> {
+        Ok(match operation {
+            "+" => a + b,
+            "-" => a - b,
+            "*" => a * b,
+            "/" => a / b,
+            "%" => a % b,
+            _ => return Err(hb_err!("math: Operation \"{}\" is not possible with a decimal number. Available operations: +, -, *, /, %. (Also //, |, ^, <<, >>, but only if both numbers are integers)", operation)),
+        })
     }
 }
 
@@ -342,68 +353,52 @@ impl HelperDef for MathHelper {
         _: &'rc hb::Context,
         _: &mut hb::RenderContext<'reg, 'rc>,
     ) -> Result<hb::ScopedJson<'reg, 'rc>, RenderError> {
-        let wrong_param_count = format!("math: Found {} parameters, but math helper requires 3 parameters: number, operator as a string, number. Example: {}.", h.params().len(), "{{ math 1 \"+\" 2.5 }}");
+        let wrong_param_count = || {
+            hb_err!("math: Found {} parameters, but math helper requires 3 parameters: number, operator as a string, number. Example: {{{{ math 1 \"+\" 2.5 }}}}.", h.params().len())
+        };
 
-        let a = h.param(0).ok_or(RenderError::new(&wrong_param_count))?;
-        let operation = h.param(1).ok_or(RenderError::new(&wrong_param_count))?;
-        let b = h.param(2).ok_or(RenderError::new(&wrong_param_count))?;
-        let operation = operation.value().as_str().ok_or(RenderError::new(
-            "math: Second argument must be a string. Example: {{ math 1 \"+\" 2 }}.",
-        ))?;
+        let a = h.param(0).ok_or_else(wrong_param_count)?.value();
+        let operation = h.param(1).ok_or_else(wrong_param_count)?.value();
+        let b = h.param(2).ok_or_else(wrong_param_count)?.value();
+        let operation = operation.as_str().ok_or_else(|| {
+            hb_err!("math: Second argument must be a string. Example: {{ math 1 \"+\" 2 }}.")
+        })?;
 
         let aint = a
-            .value()
             .as_i64()
-            .or(a.value().as_str().and_then(|s| i64::from_str(s).ok()));
-        let afloat = a
-            .value()
-            .as_f64()
-            .or(a.value().as_str().and_then(|s| f64::from_str(s).ok()));
+            .or_else(|| a.as_str().and_then(|s| i64::from_str(s).ok()));
         let bint = b
-            .value()
             .as_i64()
-            .or(b.value().as_str().and_then(|s| i64::from_str(s).ok()));
-        let bfloat = b
-            .value()
-            .as_f64()
-            .or(b.value().as_str().and_then(|s| f64::from_str(s).ok()));
+            .or_else(|| b.as_str().and_then(|s| i64::from_str(s).ok()));
 
         // try integer arithmetics
         if let (Some(aint), Some(bint)) = (aint, bint) {
             if operation != "/" {
                 // normal division is done using floats to make it simpler for inexperienced users. For integer division, use //.
-                return if let Some(r) = MathHelper::hb_math_int(aint, operation, bint) {
-                    Ok(hb::ScopedJson::Derived(JsonValue::Number(Number::from(r))))
-                } else {
-                    Err(RenderError::new(format!("math: Operation \"{}\" is not possible with integers. Available operations on integers: +, -, *, /, //, %, &, |, ^, <<, >>", operation)))
-                };
+                return Ok(hb::ScopedJson::Derived(JsonValue::Number(Number::from(
+                    Self::hb_math_int(aint, operation, bint)?,
+                ))));
             }
         };
+
         // try float arithmetics
-        let afloat = if let Some(aint) = aint {
-            Some(aint as f64)
-        } else {
-            afloat
-        };
-        let bfloat = if let Some(bint) = bint {
-            Some(bint as f64)
-        } else {
-            bfloat
-        };
-        return if let Some(afloat) = afloat {
-            if let Some(bfloat) = bfloat {
-                if let Some(r) = MathHelper::hb_math_float(afloat, operation, bfloat) {
-                    // float calculation
-                    Ok(hb::ScopedJson::Derived(JsonValue::Number(Number::from_f64(r).ok_or(RenderError::new(format!("math: Calculation result is {}, which cannot be converted to JSON number.",r)))?)))
-                } else {
-                    Err(RenderError::new(format!("math: Operation \"{}\" is not possible with a decimal number. Available operations: +, -, *, /, %. (Also //, |, ^, <<, >>, but only if both numbers are integers)", operation)))
-                }
-            } else {
-                Err(RenderError::new(format!("math: Second number is not in valid format. Valid examples: 5, -62.53. Got this: {:?}", b)))
-            }
-        } else {
-            Err(RenderError::new(format!("math: First number is not in valid format. Valid examples: 5, -62.53. Got this: {:?}", a)))
-        };
+        let afloat = a
+            .as_f64()
+            .or_else(|| a.as_str().and_then(|s| f64::from_str(s).ok()))
+            .ok_or_else(|| hb_err!("math: First number is not in valid format. Valid examples: 5, -62.53. Got this: {:?}", a))?;
+        let bfloat = b
+            .as_f64()
+            .or_else(|| b.as_str().and_then(|s| f64::from_str(s).ok()))
+            .ok_or_else(|| hb_err!("math: Second number is not in valid format. Valid examples: 5, -62.53. Got this: {:?}", b))?;
+
+        let res = Self::hb_math_float(afloat, operation, bfloat)?;
+        let res = Number::from_f64(res).ok_or_else(|| {
+            hb_err!(
+                "math: Calculation result is {}, which cannot be converted to JSON number.",
+                res
+            )
+        })?;
+        Ok(hb::ScopedJson::Derived(JsonValue::Number(res)))
     }
 }
 
@@ -422,18 +417,18 @@ impl<'a> HbRender<'a> {
     const ASSUMED_FIRST_VERSION: Version = Version::new(1, 0, 0);
 
     fn new(project: &'a Project, output: &'a Output, default: &DefaultTemaplate) -> Self {
-        let mut hb = Handlebars::new();
         let (version_helper, version) = VersionCheckHelper::new();
-        hb.register_helper("eq", Box::new(hb_eq));
-        hb.register_helper("contains", Box::new(hb_contains));
-        hb.register_helper("cat", Box::new(hb_cat));
-        hb.register_helper("default", Box::new(hb_default));
-        hb.register_helper("matches", Box::new(hb_matches));
-        hb.register_helper("math", MathHelper::new());
-        hb.register_helper("px2mm", DpiHelper::new(output));
-        hb.register_helper("img_w", ImgHelper::width(project));
-        hb.register_helper("img_h", ImgHelper::height(project));
-        hb.register_helper(VersionCheckHelper::FN_NAME, version_helper);
+        let hb = Handlebars::new()
+            .with_helper("eq", hb_eq)
+            .with_helper("contains", hb_contains)
+            .with_helper("cat", hb_cat)
+            .with_helper("default", hb_default)
+            .with_helper("matches", hb_matches)
+            .with_helper("math", MathHelper)
+            .with_helper("px2mm", DpiHelper::new(output))
+            .with_helper("img_w", ImgHelper::width(project))
+            .with_helper("img_h", ImgHelper::height(project))
+            .with_helper("version_check", version_helper);
 
         let tpl_name = output
             .template
@@ -455,12 +450,12 @@ impl<'a> HbRender<'a> {
         if let Some(template) = self.output.template.as_ref() {
             if template.exists() {
                 self.hb
-                    .register_template_file(&self.tpl_name, &template)
+                    .register_template_file(&self.tpl_name, template)
                     .with_context(|| format!("Error in template file `{}`", template))?;
             } else {
                 let parent = template.parent().unwrap(); // The temaplate should've been resolved as absolute in Project
                 fs::create_dir_all(parent)
-                    .and_then(|_| fs::write(&template, self.default_content.as_bytes()))
+                    .and_then(|_| fs::write(template, self.default_content.as_bytes()))
                     .with_context(|| {
                         format!("Error writing default template to file: `{}`", template)
                     })?;
@@ -609,3 +604,6 @@ impl<'a> Render<'a> for RHovorka<'a> {
         self.0.render()
     }
 }
+
+#[cfg(test)]
+mod tests;
