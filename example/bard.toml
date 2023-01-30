@@ -13,6 +13,7 @@ file = "songbook.tex"
 sans_font = false
 dpi = 144
 process = "latexmk -xelatex -interaction=nonstopmode {{file}}"
+process_into_pdf = true # use build-in tectonic instead of `process`
 
 [[output]]
 file = "songbook.html"
