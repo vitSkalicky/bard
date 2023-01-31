@@ -60,7 +60,7 @@ impl Output {
 
         // Hack - if use_tectonic is enabled, change format to pdf, output extension to .pdf and
         // disable post process to compile the file with tectonic instead of post_process
-        if self.use_tectonic == Some(true){
+        if self.use_tectonic == Some(true) {
             self.format = Format::Pdf;
             self.file.set_extension("pdf");
             self.post_process = None;

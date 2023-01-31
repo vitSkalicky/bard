@@ -11,8 +11,8 @@ use image::image_dimensions;
 use lazy_static::lazy_static;
 use regex::{Error as ReError, Regex};
 use semver::Version;
-use tectonic;
 use serde_json::Number;
+use tectonic;
 
 use super::{Render, RenderContext};
 use crate::error::*;
