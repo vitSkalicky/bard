@@ -61,7 +61,7 @@ assets = [
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "01b29f6d8212bc845da64773b18665d682f5ab66"
+rev = "master"
 
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
