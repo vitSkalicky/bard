@@ -154,6 +154,15 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Set up vcpkg
+        run: |
+          cargo install cargo-vcpkg
+          cargo vcpkg build
+          $env:VCPKG_ROOT=$CARGO_TARGET_DIR
+          if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
+          $env:VCPKG_ROOT="$env:VCPKG_ROOT\vcpkg"
+          $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
+          $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -165,15 +174,6 @@ jobs:
             ~/.cargo/registry/cache
             target
           key: test-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
-      - name: Set up vcpkg
-        run: |
-          cargo install cargo-vcpkg
-          cargo vcpkg build
-          $env:VCPKG_ROOT=$CARGO_TARGET_DIR
-          if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
-          $env:VCPKG_ROOT="$env:VCPKG_ROOT\vcpkg"
-          $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
-          $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Test
         run: |
           $env:VCPKG_ROOT=$CARGO_TARGET_DIR
@@ -306,6 +306,15 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Set up vcpkg
+        run: |
+          cargo install cargo-vcpkg
+          cargo vcpkg build
+          $env:VCPKG_ROOT=$CARGO_TARGET_DIR
+          if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
+          $env:VCPKG_ROOT="$env:VCPKG_ROOT\vcpkg"
+          $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
+          $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -317,15 +326,6 @@ jobs:
             ~/.cargo/registry/cache
             target
           key: build-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
-      - name: Set up vcpkg
-        run: |
-          cargo install cargo-vcpkg
-          cargo vcpkg build
-          $env:VCPKG_ROOT=$CARGO_TARGET_DIR
-          if([String]::IsNullOrWhiteSpace($env:VCPKG_ROOT)){$env:VCPKG_ROOT="$(pwd)\target"}
-          $env:VCPKG_ROOT="$env:VCPKG_ROOT\vcpkg"
-          $env:RUSTFLAGS='-Ctarget-feature=+crt-static'
-          $env:TECTONIC_DEP_BACKEND="vcpkg"
       - name: Build
         run: |
           $env:VCPKG_ROOT=$CARGO_TARGET_DIR
