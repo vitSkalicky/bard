@@ -1,4 +1,4 @@
-(This is a branch with a temporary and slightly hacky solution which allows me to use Tectonic before the support for it is merged into mater)
+(This is a branch with a temporary and slightly hacky solution which allows me to use Tectonic before the support for it is merged into mater. Used mainly for [bard-gui](https://gitlab.com/vitSkalicky/bard-gui))
 
 # bard
 
