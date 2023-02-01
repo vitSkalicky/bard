@@ -1,4 +1,17 @@
-(This is a branch with a temporary and slightly hacky solution which allows me to use Tectonic before the support for it is merged into mater. Used mainly for [bard-gui](https://gitlab.com/vitSkalicky/bard-gui))
+## tectonic-hack branch
+
+This is a branch with a temporary and slightly hacky solution which allows me to use Tectonic before the support for it is merged into mater. Used mainly for [bard-gui](https://gitlab.com/vitSkalicky/bard-gui).
+
+To enable tectonic in your project add:
+```
+[[output]]
+...
+process_into_pdf = true
+```
+to the output setting. If `process_into_pdf`is `true`:
+- `process` and `process_win` are ignored
+- output file extension is changed to `.pdf`
+- the output is processed with Textonic LaTeX engine before saving to disk (bard -> LaTeX -[Tectonic]-> PDF -[save]-> output.pdf)
 
 # bard
 
