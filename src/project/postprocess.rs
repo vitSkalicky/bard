@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::*;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 pub enum CmdSpec {
     Basic(String),

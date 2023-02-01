@@ -283,7 +283,22 @@ impl Project {
     pub fn render(&self) -> Result<()> {
         fs::create_dir_all(&self.settings.dir_output)?;
 
-        self.settings.output.iter().try_for_each(|output| {
+        let outputs: Vec<Output> = self.settings.output.iter().map(|output|{
+            // Hack - if use_tectonic is enabled and post-processing is enabled, change format to pdf, output extension to .pdf and
+            // disable post process to compile the file with tectonic instead of post_process
+            if output.use_tectonic == Some(true) && self.post_process {
+                Output {
+                    file: output.file.with_extension("pdf"),
+                    format: Format::Pdf,
+                    post_process: None,
+                    post_process_win: None,
+                    ..output.clone() }
+            }else{
+                output.clone()
+            }
+        }).collect();
+
+        outputs.iter().try_for_each(|output| {
             cli::status("Rendering", output.output_filename());
             let context = || format!("Could not render output file '{}'", output.file);
 
