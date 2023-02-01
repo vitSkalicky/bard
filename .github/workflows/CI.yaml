@@ -67,7 +67,7 @@ jobs:
           cargo install cargo-audit --version ${{ env.CARGO_AUDIT }} --root cargo-tools --target-dir cargo-tools-build
       - name: Install system dependencies
         run: |
-          sudo apt install libgraphite2-dev -y
+          sudo apt install libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev -y
       - name: Clippy
         uses: actions-rs/clippy-check@v1
         with:
@@ -121,7 +121,7 @@ jobs:
           key: test-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
       - name: Install system dependencies
         run: |
-          sudo apt install libgraphite2-dev -y
+          sudo apt install libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev -y
       - name: Test
         run: |
           cargo test --locked
@@ -211,7 +211,7 @@ jobs:
           key: msrv-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
       - name: Install system dependencies
         run: |
-          sudo apt install libgraphite2-dev -y
+          sudo apt install libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev -y
       - name: Perform MSRV check
         uses: actions-rs/cargo@v1
         with:
@@ -219,7 +219,7 @@ jobs:
           args: --locked --tests
 
   build-linux:
-    name: Linux build
+    name: Linux build ubuntu
     if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci'
     needs:
       - test-linux
@@ -252,42 +252,19 @@ jobs:
             ~/.cargo/registry/cache
             target
           key: build-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
-      - name: Cache cargo tools
-        id: cargo-tools-cache
-        uses: actions/cache@v2
-        with:
-          path: cargo-tools
-          key: build-tools-${{ env.CARGO_DEB }}-${{ env.CARGO_RPM }}
-      - name: Install cargo tools if not cached
-        if: steps.cargo-tools-cache.outputs.cache-hit != 'true'
-        run: |
-          cargo install cargo-deb --version ${{ env.CARGO_DEB }} --root cargo-tools --target-dir cargo-tools-build
-          cargo install cargo-generate-rpm --version ${{ env.CARGO_RPM }} --root cargo-tools --target-dir cargo-tools-build
       - name: Install system dependencies
         run: |
-          sudo apt install libgraphite2-dev -y
+          sudo apt install libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev -y
       - name: Build
-        run: cargo build --locked --release --target=x86_64-unknown-linux-musl
-      - name: Generate packages
         run: |
-          PATH="$PATH:$PWD/cargo-tools/bin" cargo deb --no-build --target=x86_64-unknown-linux-musl -o target/debian/bard.deb
-          PATH="$PATH:$PWD/cargo-tools/bin" cargo generate-rpm --target=x86_64-unknown-linux-musl -o target/generate-rpm/bard.rpm
+          cargo build --locked --release
+          mv target/release/bard target/release/bard-ubuntu
       # call upload-artifact per file to flatten resulting directory structure
       - name: Upload linux binary
         uses: actions/upload-artifact@v3
         with:
-          name: bard-linux
-          path: target/x86_64-unknown-linux-musl/release/bard
-      - name: Upload deb package
-        uses: actions/upload-artifact@v3
-        with:
-          name: bard-linux
-          path: target/debian/bard.deb
-      - name: Upload rpm package
-        uses: actions/upload-artifact@v3
-        with:
-          name: bard-linux
-          path: target/generate-rpm/bard.rpm
+          name: bard-ubuntu
+          path: target/release/bard-ubuntu
 
   build-windows:
     name: Windows build
