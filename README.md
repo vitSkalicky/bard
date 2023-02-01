@@ -1,3 +1,9 @@
+## skalicky/tectonic branch
+
+This branch is related to [#13](https://github.com/vojtechkral/bard/pull/13) and contains code for compiling the LaTeX output into PDF with embedded Tectonic library.
+
+Currently it is temporarly used for [tectonic-hack](https://github.com/vitSkalicky/bard/tree/tectonic-hack) branch and [bard-gui](https://gitlab.com/vitSkalicky/bard-gui) until tectonic integration makes its way into unpstream bard.
+
 # bard
 
 [![crates.io](https://img.shields.io/crates/v/bard.svg)](https://crates.io/crates/bard) [![CI](https://github.com/vojtechkral/bard/actions/workflows/CI.yaml/badge.svg)](https://github.com/vojtechkral/bard/actions/workflows/CI.yaml)
