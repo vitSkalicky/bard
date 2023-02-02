@@ -334,7 +334,5 @@ jobs:
           draft: true
           name: "bard ${{ github.ref_name }}"
           files: |
-            ./bard-linux/bard
-            ./bard-linux/bard.deb
-            ./bard-linux/bard.rpm
+            ./bard-linux/bard-ubuntu
             ./bard-windows/bard.exe
